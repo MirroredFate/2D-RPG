@@ -72,14 +72,21 @@ public class UIController : MonoBehaviour
                     displayText.text += sub;
                     yield return ui.text_Wait;
                 }
-            } 
-            yield return new WaitForSeconds(2f);
+            }
+            yield return StartCoroutine(WaitForKeyDown(KeyCode.Space));
             if(i < text.Length - 1)
             {
                 displayText.text = "";
             }
         }
         ui.text_IsShowing = false;
+    }
+
+    IEnumerator WaitForKeyDown(KeyCode keyCode)
+    {
+        while (!Input.GetKeyDown(keyCode)){
+            yield return null;
+        }
     }
 
     void DisablePanel(CanvasGroup panel){
