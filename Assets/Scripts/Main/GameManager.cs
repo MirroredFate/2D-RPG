@@ -4,6 +4,7 @@ using UnityEngine;
 
 
 public enum GameStates {MAIN_MENU, INTRO, CLASS_SELECTION, HOME, BATTLE, DUNGEON, TOWN}
+public enum IntroStates { DIALOGUE_1, NAME_INPUT, DIALOGUE_2 }
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
@@ -21,10 +22,13 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public GameStates states;
+    public GameStates game_States;
+    public IntroStates intro_States;
+
+    public Player player;
 
     private void Awake() {
-        states = GameStates.MAIN_MENU;
+        game_States = GameStates.MAIN_MENU;
     }
 
      // Start is called before the first frame update
@@ -42,35 +46,52 @@ public class GameManager : MonoBehaviour
     public void SetGamestate(int state){
         switch(state){
             case 0:
-                states = GameStates.MAIN_MENU;
+                game_States = GameStates.MAIN_MENU;
                 break;
             case 1:
-                states = GameStates.INTRO;
+                game_States = GameStates.INTRO;
                 break;
             case 2:
-                states = GameStates.CLASS_SELECTION;
+                game_States = GameStates.CLASS_SELECTION;
                 break;
             case 3:
-                states = GameStates.HOME;
+                game_States = GameStates.HOME;
                 break;
             case 4:
-                states = GameStates.BATTLE;
+                game_States = GameStates.BATTLE;
                 break;
             case 5: 
-                states = GameStates.DUNGEON;
+                game_States = GameStates.DUNGEON;
                 break;
             case 6:
-                states = GameStates.TOWN;
+                game_States = GameStates.TOWN;
                 break;
             default:
-                states = GameStates.MAIN_MENU;
+                game_States = GameStates.MAIN_MENU;
                 break;
 
         }
     }
 
+    public void SetIntroState(int state){
+        switch(state){
+            case 0:
+                intro_States = IntroStates.DIALOGUE_1;
+                break;
+            case 1:
+                intro_States = IntroStates.NAME_INPUT;
+                break;
+            case 2:
+                intro_States = IntroStates.DIALOGUE_2;
+                break;
+            default:
+                intro_States = IntroStates.DIALOGUE_1;
+                break;
+        }
+    }
+
     public int GetGamestate(){
-        switch(states){
+        switch(game_States){
             case GameStates.MAIN_MENU:
                 return 0;
             case GameStates.INTRO:
@@ -85,6 +106,19 @@ public class GameManager : MonoBehaviour
                 return 5;
             case GameStates.TOWN:
                 return 6;
+            default:
+                return 0;
+        }
+    }
+
+    public int GetIntroState(){
+        switch(intro_States){
+            case IntroStates.DIALOGUE_1:
+                return 0;
+            case IntroStates.NAME_INPUT:
+                return 1;
+            case IntroStates.DIALOGUE_2:
+                return 2;
             default:
                 return 0;
         }

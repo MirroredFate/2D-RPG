@@ -24,13 +24,19 @@ public class UIController : MonoBehaviour
     }
 
     void StartIntro(){
+        ui.intro_NameInput.onEndEdit.AddListener(delegate {Intro_NameInputSubmit(); });
+        GameManager.Instance.SetIntroState(0);
 
         ui.text_Wait = new WaitForSeconds(0.1f);
+        ui.intro_NameInput.gameObject.SetActive(false);
 
         DisablePanel(ui.mainMenu_Panel);
         EnablePanel(ui.intro_Panel);
 
-        StartCoroutine(DisplayText(ui.dialogue.intro_Text, ui.intro_Text));
+        if(!ui.text_IsShowing){
+            StartCoroutine(DisplayText(ui.dialogue.intro_Text, ui.intro_Text));
+            StartCoroutine(Intro_ShowNameInput());
+        }
     }
 
     // Update is called once per frame
@@ -41,42 +47,102 @@ public class UIController : MonoBehaviour
                 
                 break;
             case 1: // Intro Sequence
-                if(!ui.text_IsShowing)
-                {
-                    StopCoroutine(DisplayText(ui.dialogue.intro_Text, ui.intro_Text));
-                }
+                Intro_Update();
                 break;
         }
         
     }
 
+    void Intro_Update()
+    {
+        switch(GameManager.Instance.GetIntroState()){
+                    case 0: // Start Dialogue
+                        if(!ui.text_IsShowing)
+                        {
+                            StopCoroutine(DisplayText(ui.dialogue.intro_Text, ui.intro_Text));
+                        }
+                        break;
+
+                    case 1: // Name Input
+                        StopCoroutine(Intro_ShowNameInput());
+                        
+                        break;
+
+                    case 2: // Second Dialogue
+                        if(!ui.text_IsShowing)
+                        {
+
+                            StopCoroutine(DisplayText(ui.dialogue.intro_Dialogue2, ui.intro_Text));
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+    }
+
     IEnumerator DisplayText(string[] text, TextMeshProUGUI displayText)
     {
+        string sub = " ";
+        string formattedText = " ";
         if(displayText.text != "")
         {
             displayText.text = "";
+            
         }
         ui.text_IsShowing = true;
         for (int i = 0; i < text.Length; i++)
         {
-            for (int j = 0; j < text[i].Length; j++)
+            if(FormatText(text[i]) != "")
             {
-                string sub = text[i].Substring(j, 1);
+                formattedText = FormatText(text[i]);
+                Debug.Log(formattedText);
 
-                if(sub == " ")
+                for (int j = 0; j < formattedText.Length; j++)
                 {
-                    displayText.text += sub;
+                    sub = formattedText.Substring(j, 1);
+                
+                    if(sub == " ")
+                    {
+                        displayText.text += sub;
+                    }
+                    else
+                    {
+                        displayText.text += sub;
+                        yield return ui.text_Wait;
+                    }
                 }
-                else
+                if(i < text.Length - 1)
                 {
-                    displayText.text += sub;
-                    yield return ui.text_Wait;
+                    yield return StartCoroutine(WaitForKeyDown(KeyCode.Space));
+                    displayText.text = "";
+                
+                    StopCoroutine(WaitForKeyDown(KeyCode.Space));
                 }
             }
-            yield return StartCoroutine(WaitForKeyDown(KeyCode.Space));
-            if(i < text.Length - 1)
+            else
             {
-                displayText.text = "";
+                for (int j = 0; j < text[i].Length; j++)
+                {
+                    sub = text[i].Substring(j, 1);
+                
+                    if(sub == " ")
+                    {
+                        displayText.text += sub;
+                    }
+                    else
+                    {
+                        displayText.text += sub;
+                        yield return ui.text_Wait;
+                    }
+                }
+                if(i < text.Length - 1)
+                {
+                    yield return StartCoroutine(WaitForKeyDown(KeyCode.Space));
+                    displayText.text = "";
+                
+                    StopCoroutine(WaitForKeyDown(KeyCode.Space));
+                }
             }
         }
         ui.text_IsShowing = false;
@@ -87,6 +153,20 @@ public class UIController : MonoBehaviour
         while (!Input.GetKeyDown(keyCode)){
             yield return null;
         }
+    }
+
+    string FormatText(string text)
+    {
+        string newText = "";
+
+        // /p = Player Name
+        if(text.Contains("/p"))
+        {
+            int index = text.IndexOf("/p");
+            newText = text.Replace("/p", GameManager.Instance.player.GetPlayerName());
+        }
+
+        return newText;
     }
 
     void DisablePanel(CanvasGroup panel){
@@ -116,4 +196,29 @@ public class UIController : MonoBehaviour
 
 
     #endregion
+
+    #region Intro Stuff
+
+    IEnumerator Intro_ShowNameInput()
+    {
+        WaitForSeconds wait = new WaitForSeconds(0.1f);
+        while(ui.text_IsShowing)
+        {
+            yield return wait;
+        }
+        ui.intro_NameInput.gameObject.SetActive(true);
+        GameManager.Instance.SetIntroState(1);
+    }
+
+    void Intro_NameInputSubmit()
+    {
+        GameManager.Instance.player.SetPlayerName(ui.intro_NameInput.text);
+        GameManager.Instance.SetIntroState(2);
+        StartCoroutine(DisplayText(ui.dialogue.intro_Dialogue2, ui.intro_Text));
+        ui.intro_NameInput.gameObject.SetActive(false);
+    }
+
+    #endregion
+
+
 }

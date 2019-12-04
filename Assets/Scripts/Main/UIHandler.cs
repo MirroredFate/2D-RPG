@@ -23,6 +23,7 @@ public class UIHandler : MonoBehaviour
     [Header("Intro")]
     public TextMeshProUGUI intro_Text;
     public CanvasGroup intro_Panel;
+    public TMP_InputField intro_NameInput;
 
 
 }
